@@ -15,10 +15,12 @@ namespace DefaultNamespace
 		private void Start()
 		{
 			////todo comment: зачем нужны эти проверки?
+			////
 			if (!TryGetComponent(out _save) || _save.Records.Count == 0)
 			{
 				Debug.LogError("Records incorrect value", this);
 				//todo comment: Для чего выключается этот компонент?
+				//чтобы не включился апдэйт в скрипте, так как значение сэйв некорректное
 				enabled = false;
 			}
 		}
@@ -27,11 +29,13 @@ namespace DefaultNamespace
 		{
 			var curr = _save.Records[_index];
 			//todo comment: Что проверяет это условие (с какой целью)? 
+			//проверяет игровое время с сохранёным временем когда появился круг, 
 			if (Time.time > curr.Time)
 			{
 				_prev = curr;
 				_index++;
 				//todo comment: Для чего нужна эта проверка?
+				//чтобы индекс не превышал количество ячеек в листе рекордс, так так нет такой ячейки в рекордс.
 				if (_index >= _save.Records.Count)
 				{
 					enabled = false;
@@ -39,6 +43,7 @@ namespace DefaultNamespace
 				}
 			}
 			//todo comment: Для чего производятся эти вычисления (как в дальнейшем они применяются)?
+			//
 			var delta = (Time.time - _prev.Time) / (curr.Time - _prev.Time);
 			//todo comment: Зачем нужна эта проверка?
 			if (float.IsNaN(delta)) delta = 0f;

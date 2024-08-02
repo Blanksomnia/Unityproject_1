@@ -49,31 +49,34 @@ namespace DefaultNamespace
 
 		private void Awake()
 		{
-
 			//todo comment: Что будет, если в теле этого условия не сделать выход из метода?
-			//
+			//будет искать ссылку на файл, которого нет
 			if (_json == null)
 			{
 				gameObject.SetActive(false);
 				Debug.LogError("Please, create TextAsset and add in field _json");
-				
-			}
-			
+				return;
+			}			
 			JsonUtility.FromJsonOverwrite(_json.text, this);
 			//todo comment: Для чего нужна эта проверка (что она позволяет избежать)?
+		    //позваляет избежать отсутствии размера коллекции
 			if (Records == null)
-				Records = new List<Data>(10);
+			{
+                Records = new List<Data>(10);
+            }
 		}
 
 		private void OnDrawGizmos()
 		{
-			//todo comment: Зачем нужны эти проверки (что они позволляют избежать)?
-			if (Records == null || Records.Count == 0) return;
+            //todo comment: Зачем нужны эти проверки (что они позволляют избежать)?
+            //позваляет избежать отсутствии размера коллекции
+            if (Records == null || Records.Count == 0) return;
 			var data = Records;
 			var prev = data[0].Position;
 			Gizmos.color = Color.green;
 			Gizmos.DrawWireSphere(prev, 0.3f);
 			//todo comment: Почему итерация начинается не с нулевого элемента?
+			//
 			for (int i = 1; i < data.Count; i++)
 			{
 				var curr = data[i].Position;
@@ -89,8 +92,12 @@ namespace DefaultNamespace
 		private void CreateFile()
 		{
 			//todo comment: Что происходит в этой строке?
+			//создание файла
 			var stream = File.Create(Path.Combine(Application.dataPath, "Path.txt"));
+			var text = JsonUtility.ToJson(Records, true);
+			JsonUtility.ToJson(Records);
 			//todo comment: Подумайте для чего нужна эта строка? (а потом проверьте догадку, закомментировав) 
+			//избавляется от него вручную, вместо того чтобы ждать сборщика мусора, чтобы использовать его
 			stream.Dispose();
 			UnityEditor.AssetDatabase.Refresh();
 			//В Unity можно искать объекты по их типу, для этого используется префикс "t:"
@@ -102,7 +109,9 @@ namespace DefaultNamespace
 				var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
 				//Этой командой можно загрузить сам ассет
 				var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<TextAsset>(path);
+				File.WriteAllText(path, text);
 				//todo comment: Для чего нужны эти проверки?
+				//чтобы не сохранить пустой объект
 				if(asset != null && asset.name == "Path")
 				{
 					_json = asset;
@@ -110,6 +119,7 @@ namespace DefaultNamespace
 					UnityEditor.AssetDatabase.SaveAssets();
 					UnityEditor.AssetDatabase.Refresh();
 					//todo comment: Почему мы здесь выходим, а не продолжаем итерироваться?
+					//чтобы закончить цикл foreach
 					return;
 				}
 			}
@@ -117,7 +127,8 @@ namespace DefaultNamespace
 
         private void OnDestroy()
         {
-		    
+            
+			CreateFile();
         }
 #endif
     }
