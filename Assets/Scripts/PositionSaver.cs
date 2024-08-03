@@ -128,7 +128,12 @@ namespace DefaultNamespace
         private void OnDestroy()
         {
             
-			CreateFile();
+			var text = JsonUtility.ToJson(this, true);
+                        var path = Path.Combine(Application.dataPath, "Path.txt");
+                        File.WriteAllText(path, text);
+                        UnityEditor.EditorUtility.SetDirty(_json);
+                        UnityEditor.AssetDatabase.SaveAssets();
+                        UnityEditor.AssetDatabase.Refresh();
         }
 #endif
     }
